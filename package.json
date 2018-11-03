@@ -1,0 +1,30 @@
+{
+  "name": "forward-logs",
+  "version": "1.0.0",
+  "description": "Forwards the stdout and stderr of a command to a websocket server, as defined by environment variables.",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^10.12.2",
+    "gulp": "^4.0.0",
+    "gulp-cli": "^2.0.1",
+    "mkdirp": "^0.5.1",
+    "nexe": "^2.0.0-rc.34",
+    "prettier": "^1.14.3",
+    "ts-node": "^7.0.1",
+    "typescript": "^3.1.6"
+  },
+  "dependencies": {
+    "websocket-stream": "^5.1.2"
+  },
+  "repository": {
+    "url": "https://github.com/HiveMP/forward-logs"
+  },
+  "scripts": {
+    "start": "ts-node index.ts",
+    "start-native": "tsc && nexe index.js && forward-logs",
+    "build": "tsc && nexe index.js",
+    "build-echo": "nexe echo.js",
+    "build-release": "tsc && gulp && nexe -t linux-x64 -o dist/linux-x64/forward-logs && nexe -t windows-x64 -o dist/windows-x64/forward-logs.exe && nexe -t alpine-x64 -o dist/alpine-x64/forward-logs"
+  }
+}
