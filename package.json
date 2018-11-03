@@ -6,16 +6,19 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^10.12.2",
+    "@types/which": "^1.3.1",
     "gulp": "^4.0.0",
     "gulp-cli": "^2.0.1",
     "mkdirp": "^0.5.1",
-    "nexe": "^2.0.0-rc.34",
     "prettier": "^1.14.3",
     "ts-node": "^7.0.1",
     "typescript": "^3.1.6"
   },
   "dependencies": {
-    "websocket-stream": "^5.1.2"
+    "nexe": "^3.0.0-beta.7",
+    "node-pty": "^0.7.8",
+    "websocket-stream": "^5.1.2",
+    "which": "^1.3.1"
   },
   "repository": {
     "url": "https://github.com/HiveMP/forward-logs"
@@ -25,6 +28,6 @@
     "start-native": "tsc && nexe index.js && forward-logs",
     "build": "tsc && nexe index.js",
     "build-echo": "nexe echo.js",
-    "build-release": "tsc && gulp && nexe -t linux-x64 -o dist/linux-x64/forward-logs && nexe -t windows-x64 -o dist/windows-x64/forward-logs.exe && nexe -t alpine-x64 -o dist/alpine-x64/forward-logs"
+    "build-release": "tsc && gulp && nexe -o dist/forward-logs"
   }
 }
