@@ -1,4 +1,5 @@
 version: 1.0.{build}
+skip_tags: true
 image:
   - Visual Studio 2017
   - Ubuntu1804
@@ -15,3 +16,5 @@ deploy:
     auth_token:
       secure: JQfHIn6VDr0Lw+NhQ51C7Jjd1vK7fW4vuT6iMlf40Ni07AbP4zhEylS1JTxTWIPP
     artifact: forward-logs
+    on:
+      branch: master
