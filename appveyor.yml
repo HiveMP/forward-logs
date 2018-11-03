@@ -8,6 +8,9 @@ build_script:
   - sh: >-
       yarn
       yarn build-release
+  - cmd: >-
+      yarn
+      yarn build-release
 artifacts:
   - path: dist/**
     name: forward-logs
