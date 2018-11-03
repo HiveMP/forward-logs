@@ -3,10 +3,11 @@ skip_tags: true
 image:
   - Visual Studio 2017
   - Ubuntu1804
-environment:
-  nodejs_version: "10"
+stack: node 10
+install:
+  - cmd: powershell Install-Product node 10
 build_script:
-  - yarn install --ignore-engines
+  - yarn
   - yarn build-release
 artifacts:
   - path: dist/**
