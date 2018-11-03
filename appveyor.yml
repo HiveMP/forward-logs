@@ -5,12 +5,8 @@ image:
 environment:
   nodejs_version: "10"
 build_script:
-  - sh:
-      - yarn
-      - yarn build-release
-  - cmd:
-      - yarn
-      - yarn build-release
+  - yarn
+  - yarn build-release
 artifacts:
   - path: dist/**
     name: forward-logs
