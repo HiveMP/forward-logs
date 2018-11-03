@@ -28,6 +28,6 @@
     "start-native": "tsc && nexe index.js && forward-logs",
     "build": "tsc && nexe index.js",
     "build-echo": "nexe echo.js",
-    "build-release": "tsc && gulp && nexe -o dist/forward-logs"
+    "build-release": "tsc && gulp && nexe --input index.js -o dist/forward-logs"
   }
 }
