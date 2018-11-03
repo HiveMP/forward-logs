@@ -2,7 +2,7 @@ version: 1.0.{build}
 skip_tags: true
 image:
   - Visual Studio 2017
-  - Ubuntu1804
+  - ubuntu
 environment:
   nodejs_version: "10"
 build_script:
