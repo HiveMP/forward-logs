@@ -28,9 +28,9 @@
   "scripts": {
     "start": "ts-node index.ts",
     "start-native": "gulp build-forward-logs && forward-logs",
-    "build": "gulp build-forward-logs",
-    "build-echo": "gulp",
-    "build-release": "gulp release",
-    "gulp": "gulp"
+    "build": "node_modules/.bin/gulp build-forward-logs",
+    "build-echo": "node_modules/.bin/gulp",
+    "build-release": "node_modules/.bin/gulp release",
+    "gulp": "node_modules/.bin/gulp"
   }
 }
