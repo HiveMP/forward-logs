@@ -135,7 +135,7 @@ function createErrorFunction(context) {
   };
 }
 
-async function runTest(captureFunc, getExpectedOutput) {
+async function runTest(captureFunc, getExpectedOutputs) {
   let chunks = [];
   let result = null;
   function handle(stream, request) {
@@ -180,7 +180,7 @@ async function runTest(captureFunc, getExpectedOutput) {
 7
 8
 9`.trim();
-  const processOutput = getExpectedOutput(port).trim();
+  const processOutputs = getExpectedOutputs(port).map(value => value.trim());
 
   const wss = websocket.createServer(
     { perMessageDeflate: false, server: httpServer },
@@ -197,11 +197,20 @@ async function runTest(captureFunc, getExpectedOutput) {
         FORWARD_LOGS_DEBUG: true
       }
     );
-    if (
-      stripAnsi(output)
-        .replace(/\r\n/g, "\n")
-        .trim() !== processOutput.replace(/\r\n/g, "\n")
-    ) {
+    let anyMatch = false;
+    for (let i = 0; i < processOutputs.length; i++) {
+      if (
+        stripAnsi(output)
+          .replace(/\r\n/g, "\n")
+          .trim() !== processOutputs[i].replace(/\r\n/g, "\n")
+      ) {
+        continue;
+      } else {
+        anyMatch = true;
+        break;
+      }
+    }
+    if (!anyMatch) {
       console.error(
         "test fail: didn't get expected output direct from executable, got output: "
       );
@@ -243,9 +252,8 @@ async function runTest(captureFunc, getExpectedOutput) {
 
 gulp.task("run-test-child-process", async () => {
   try {
-    await runTest(
-      captureAsync,
-      port => `
+    await runTest(captureAsync, port => [
+      `
 > starting command: ../echo
 > with arguments: []
 > connecting to ws://localhost:${port}
@@ -267,8 +275,31 @@ gulp.task("run-test-child-process", async () => {
 > stdout closed
 > stderr closed
 > process exited with exit code: 0
+> process and all streams have shutdown`,
+      `
+> starting command: ../echo
+> with arguments: []
+> connecting to ws://localhost:${port}
+> spawning process with child_process
+> connecting child process stdout to websocket
+> connecting child process stderr to websocket
+> listening for child process exit
+> waiting for execution to complete
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+> stderr closed
+> stdout closed
+> process exited with exit code: 0
 > process and all streams have shutdown`
-    );
+    ]);
   } finally {
     // Make sure the PTY assets don't exist in dist/ for deployment.
     cleanupPtyAssets();
@@ -277,9 +308,8 @@ gulp.task("run-test-child-process", async () => {
 
 gulp.task("run-test-pty", async () => {
   try {
-    await runTest(
-      captureAsyncPty,
-      port => `
+    await runTest(captureAsyncPty, port => [
+      `
 > starting command: ../echo
 > with arguments: []
 > connecting to ws://localhost:${port}
@@ -301,7 +331,7 @@ gulp.task("run-test-pty", async () => {
 > stdout closed
 > process exited with exit code: 0
 > process and all streams have shutdown`
-    );
+    ]);
   } finally {
     // Make sure the PTY assets don't exist in dist/ for deployment.
     cleanupPtyAssets();
