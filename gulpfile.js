@@ -4,7 +4,8 @@ const { compile } = require("nexe");
 const { spawn } = require("child_process");
 const http = require("http");
 const websocket = require("websocket-stream");
-const { join } = require("path");
+const path = require("path");
+const join = path.join;
 const { existsSync } = require("fs");
 const stripAnsi = require("strip-ansi");
 const rimraf = require("rimraf");
@@ -108,7 +109,7 @@ gulp.task("build-forward-logs", async () => {
   cleanupPtyAssets();
 
   await compile({
-    input: "./index.js",
+    input: path.resolve("./index.js"),
     output: "dist/forward-logs",
     enableStdIn: false,
     resources: [
@@ -121,7 +122,7 @@ gulp.task("build-forward-logs", async () => {
 
 gulp.task("build-test", async () => {
   await compile({
-    input: "./echo.js",
+    input: path.resolve("./echo.js"),
     output: "echo",
     enableStdIn: false
   });
