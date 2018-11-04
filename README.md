@@ -2,6 +2,10 @@
 
 Forwards the stdout and stderr of a command to a websocket server, as defined by environment variables.
 
+## Download
+
+You can download forward-logs for either Linux or Windows from the [GitHub releases page](https://github.com/HiveMP/forward-logs/releases).
+
 ## Usage
 
 First set the environment variable `FORWARD_LOGS_URL` to the WebSocket server you want to forward stdout and stderr to, then prepend `forward-logs` to any command on the command line:
