@@ -1,7 +1,44 @@
 import * as websocket from "websocket-stream";
 import { spawn } from "child_process";
-import * as pty from "node-pty";
 import * as which from "which";
+import { join, isAbsolute, resolve } from "path";
+import { readFileSync, writeFileSync, existsSync } from "fs";
+
+// Patch for native build at runtime when trying to load
+// the pty.node file.
+module.constructor.prototype.require = function(path) {
+  var self = this;
+  try {
+    return self.constructor._load(path, self);
+  } catch (err) {
+    if (path.indexOf("pty.node") !== -1) {
+      // This is the pty.node file, extract assets then try again.
+      if (!existsSync("pty.node")) {
+        writeFileSync(
+          join(__dirname, "pty.node"),
+          readFileSync("./node_modules/node-pty/build/Release/pty.node")
+        );
+      }
+      if (!existsSync("winpty-agent.exe")) {
+        writeFileSync(
+          join(__dirname, "winpty-agent.exe"),
+          readFileSync("./node_modules/node-pty/build/Release/winpty-agent.exe")
+        );
+      }
+      if (!existsSync("winpty.dll")) {
+        writeFileSync(
+          join(__dirname, "winpty.dll"),
+          readFileSync("./node_modules/node-pty/build/Release/winpty.dll")
+        );
+      }
+      return self.constructor._load(join(__dirname, "pty.node"), self);
+    } else {
+      throw err;
+    }
+  }
+};
+
+import * as pty from "node-pty";
 
 if (process.argv.length < 3) {
   console.error("forward-logs expects a command to be passed");
@@ -83,7 +120,11 @@ function handlePotentialExit() {
 
 if (forwardLogsUsePty) {
   debugLog("spawning process with pty");
-  const cp = pty.spawn(which.sync(command), args, {
+  let resolvedCommand = which.sync(command);
+  if (!isAbsolute(resolvedCommand)) {
+    resolvedCommand = join(process.cwd(), resolvedCommand);
+  }
+  const cp = pty.spawn(resolvedCommand, args, {
     name: "xterm",
     cols: process.stdout.columns,
     rows: process.stdout.rows,
