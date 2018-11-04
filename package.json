@@ -15,7 +15,7 @@
     "typescript": "^3.1.6"
   },
   "dependencies": {
-    "nexe": "^3.0.0-beta.7",
+    "nexe": "^2.0.0-rc.34",
     "node-pty": "^0.7.8",
     "websocket-stream": "^5.1.2",
     "which": "^1.3.1"
@@ -25,9 +25,10 @@
   },
   "scripts": {
     "start": "ts-node index.ts",
-    "start-native": "tsc && nexe index.js && forward-logs",
-    "build": "tsc && nexe index.js",
-    "build-echo": "nexe echo.js",
-    "build-release": "tsc && gulp"
+    "start-native": "gulp build-forward-logs && forward-logs",
+    "build": "gulp build-forward-logs",
+    "build-echo": "gulp",
+    "build-release": "gulp release",
+    "gulp": "gulp"
   }
 }

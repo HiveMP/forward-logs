@@ -8,7 +8,7 @@ install:
   - cmd: powershell Install-Product node 10
 build_script:
   - yarn
-  - yarn build-release
+  - gulp release
 artifacts:
   - path: dist/**
     name: forward-logs

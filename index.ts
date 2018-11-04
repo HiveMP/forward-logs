@@ -29,13 +29,6 @@ let isStdOutOpen = true;
 let isStdErrOpen = true;
 let processExited = false;
 
-function handlePotentialExit() {
-  if (!isStdOutOpen && !isStdErrOpen && processExited) {
-    debugLog("process and all streams have shutdown");
-    process.exit();
-  }
-}
-
 function debugLog(message) {
   if (forwardLogsIsDebug) {
     console.log("> " + message);
@@ -59,11 +52,34 @@ debugLog("starting command: " + command);
 debugLog("with arguments: " + JSON.stringify(args));
 
 debugLog("connecting to " + forwardLogsUrl);
-const ws = websocket(forwardLogsUrl);
+const ws = websocket(forwardLogsUrl, {
+  binary: true,
+  objectMode: true
+});
 ws.on("close", () => {
   debugLog("websocket closed");
 });
 ws.on("error", createErrorFunction("websocket error"));
+
+function handlePotentialExit() {
+  if (!isStdOutOpen && !isStdErrOpen && processExited) {
+    debugLog("process and all streams have shutdown");
+    /*console.error(ws);
+    ws._writable._flush(err => {
+      if (err) {
+        debugError("error while closing websocket on process exit:");
+        debugError(err);
+      }
+
+      // Data should all be flushed at this point...?
+      process.exit();
+    });*/
+    ws.socket.close(1000, "process exited");
+    process.exit();
+    /*
+    );*/
+  }
+}
 
 if (forwardLogsUsePty) {
   debugLog("spawning process with pty");
