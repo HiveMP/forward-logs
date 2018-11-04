@@ -14,7 +14,7 @@ forward-logs COMMAND ARGS
 
 The following environment variables are recognised:
 
-- `FORWARD_LOGS_URLS`: **Required**. Specifies the WebSocket to send stdout/stderr to.
+- `FORWARD_LOGS_URL`: **Required**. Specifies the WebSocket to send stdout/stderr to.
 - `FORWARD_LOGS_DEBUG`: If set to `true`, additional debugging information is sent to the host's stdlog and stderr (not the WebSocket), which can help diagnose issues.
 - `FORWARD_LOGS_USE_PTY`: If set to either `true` or `false`, forces or prevents the use of a PTY for the child program. By default, the use of a PTY for the child program is based on whether `forward-logs` is attached to a TTY itself.
 
