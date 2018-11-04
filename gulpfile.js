@@ -5,8 +5,9 @@ const { spawn } = require("child_process");
 const http = require("http");
 const websocket = require("websocket-stream");
 const { join } = require("path");
-const { existsSync, unlinkSync } = require("fs");
+const { existsSync } = require("fs");
 const stripAnsi = require("strip-ansi");
+const rimraf = require("rimraf");
 
 process.env.PROJECT_ROOT = __dirname;
 
@@ -76,13 +77,21 @@ async function captureAsyncPty(command, args, cwd, env) {
 
 function cleanupPtyAssets() {
   if (existsSync(join(__dirname, "dist", "pty.node"))) {
-    unlinkSync(join(__dirname, "dist", "pty.node"));
+    try {
+      rimraf.sync(join(__dirname, "dist", "pty.node"), { disableGlob: true });
+    } catch {}
   }
   if (existsSync(join(__dirname, "dist", "winpty-agent.exe"))) {
-    unlinkSync(join(__dirname, "dist", "winpty-agent.exe"));
+    try {
+      rimraf.sync(join(__dirname, "dist", "winpty-agent.exe"), {
+        disableGlob: true
+      });
+    } catch {}
   }
   if (existsSync(join(__dirname, "dist", "winpty.dll"))) {
-    unlinkSync(join(__dirname, "dist", "winpty.dll"));
+    try {
+      rimraf.sync(join(__dirname, "dist", "winpty.dll"), { disableGlob: true });
+    } catch {}
   }
 }
 

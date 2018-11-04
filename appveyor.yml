@@ -10,7 +10,7 @@ build_script:
   - yarn
   - yarn gulp release
 artifacts:
-  - path: dist/**
+  - path: dist/forward-logs*
     name: forward-logs
 deploy:
   - provider: GitHub
