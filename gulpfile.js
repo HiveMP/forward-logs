@@ -109,7 +109,7 @@ gulp.task("build-forward-logs", async () => {
   cleanupPtyAssets();
 
   await compile({
-    input: path.resolve("./index.js"),
+    input: path.resolve("./startup.js"),
     output: "dist/forward-logs",
     enableStdIn: false,
     resources: [
@@ -250,6 +250,125 @@ async function runTest(captureFunc, getExpectedOutputs) {
   }
 }
 
+async function runDisconnectionTest(captureFunc, getExpectedOutputs) {
+  let chunks = [];
+  let result = null;
+  function handle(stream, request) {
+    stream.on("data", chunk => {
+      if (chunk.toString().indexOf("disconnect server") !== -1) {
+        stream.socket.close();
+      }
+      chunks.push(chunk);
+    });
+    stream.on("end", () => {
+      result = Buffer.concat(chunks)
+        .toString()
+        .trim();
+    });
+    stream.on("error", err => {
+      if (err.target.readyState === 3) {
+        // WebSocket has already closed, this is OK. The Node.js ws
+        // module emits ECONNRESET when WebSockets close normally.
+      } else {
+        result = Buffer.concat(chunks)
+          .toString()
+          .trim();
+        createErrorFunction("error while processing WebSocket stream")(err);
+      }
+    });
+  }
+  const httpServer = http.createServer(req => {
+    // nothing to do here.
+  });
+  httpServer.on("error", createErrorFunction("error during http server"));
+  const port = await new Promise(resolve => {
+    httpServer.on("listening", function() {
+      resolve(httpServer.address().port);
+    });
+    httpServer.listen(0);
+  });
+
+  const websocketOutput = `0
+1
+2
+3
+4
+disconnect server
+5
+6
+7
+8
+9`.trim();
+  const processOutputs = getExpectedOutputs(port).map(value => value.trim());
+
+  const wss = websocket.createServer(
+    { perMessageDeflate: false, server: httpServer },
+    handle
+  );
+
+  try {
+    const output = await captureFunc(
+      join(__dirname, "dist", "forward-logs"),
+      ["../echo", "1"],
+      join(__dirname, "dist"),
+      {
+        FORWARD_LOGS_URL: "ws://localhost:" + port,
+        FORWARD_LOGS_DEBUG: true
+      }
+    );
+    let anyMatch = false;
+    for (let i = 0; i < processOutputs.length; i++) {
+      if (
+        stripAnsi(output)
+          .replace(/\r\n/g, "\n")
+          .trim() !== processOutputs[i].replace(/\r\n/g, "\n")
+      ) {
+        continue;
+      } else {
+        anyMatch = true;
+        break;
+      }
+    }
+    if (!anyMatch) {
+      console.error(
+        "test fail: didn't get expected output direct from executable, got output: "
+      );
+      console.error(stripAnsi(output).trim());
+      process.exitCode = 1;
+      return;
+    } else {
+      console.log("test pass: process output matched expected values!");
+    }
+
+    if (
+      result === null ||
+      stripAnsi(result)
+        .replace(/\r\n/g, "\n")
+        .trim() !== websocketOutput.replace(/\r\n/g, "\n")
+    ) {
+      console.error(
+        "tests failed, didn't get expected output from WebSocket, got output: "
+      );
+      console.error(result);
+      process.exitCode = 1;
+      return;
+    } else {
+      console.log("test pass: WebSocket output matched expected values!");
+    }
+  } finally {
+    await new Promise((resolve, reject) =>
+      httpServer.close(err => {
+        if (err) {
+          createErrorFunction("error during http server shutdown")(err);
+          reject(err);
+        } else {
+          resolve();
+        }
+      })
+    );
+  }
+}
+
 gulp.task("run-test-child-process", async () => {
   try {
     await runTest(captureAsync, port => [
@@ -262,6 +381,8 @@ gulp.task("run-test-child-process", async () => {
 > connecting child process stderr to websocket
 > listening for child process exit
 > waiting for execution to complete
+> websocket connected
+> flushing buffers
 0
 1
 2
@@ -285,11 +406,71 @@ gulp.task("run-test-child-process", async () => {
 > connecting child process stderr to websocket
 > listening for child process exit
 > waiting for execution to complete
+> websocket connected
+> flushing buffers
 0
 1
 2
 3
 4
+5
+6
+7
+8
+9
+> stderr closed
+> stdout closed
+> process exited with exit code: 0
+> process and all streams have shutdown`
+    ]);
+    await runDisconnectionTest(captureAsync, port => [
+      `
+> starting command: ../echo
+> with arguments: ["1"]
+> connecting to ws://localhost:${port}
+> spawning process with child_process
+> connecting child process stdout to websocket
+> connecting child process stderr to websocket
+> listening for child process exit
+> waiting for execution to complete
+> websocket connected
+> flushing buffers
+0
+1
+2
+3
+4
+disconnect server
+> websocket connected
+> flushing buffers
+5
+6
+7
+8
+9
+> stdout closed
+> stderr closed
+> process exited with exit code: 0
+> process and all streams have shutdown`,
+      `
+> starting command: ../echo
+> with arguments: ["1"]
+> connecting to ws://localhost:${port}
+> spawning process with child_process
+> connecting child process stdout to websocket
+> connecting child process stderr to websocket
+> listening for child process exit
+> waiting for execution to complete
+> websocket connected
+> flushing buffers
+0
+1
+2
+3
+4
+disconnect server
+> websocket connected
+> flushing buffers
 5
 6
 7
@@ -318,11 +499,42 @@ gulp.task("run-test-pty", async () => {
 > connecting child process stdout to websocket
 > listening for child process exit
 > waiting for execution to complete
+> websocket connected
+> flushing buffers
 0
 1
 2
 3
 4
+5
+6
+7
+8
+9
+> stdout closed
+> process exited with exit code: 0
+> process and all streams have shutdown`
+    ]);
+    await runDisconnectionTest(captureAsyncPty, port => [
+      `
+> starting command: ../echo
+> with arguments: ["1"]
+> connecting to ws://localhost:${port}
+> spawning process with pty
+> wiring up terminal resize propagation
+> connecting child process stdout to websocket
+> listening for child process exit
+> waiting for execution to complete
+> websocket connected
+> flushing buffers
+0
+1
+2
+3
+4
+disconnect server
+> websocket connected
+> flushing buffers
 5
 6
 7
