@@ -1,11 +1,10 @@
 {
-    "compilerOptions": {
-      "target": "es6",
-      "module": "commonjs",
-      "sourceMap": true,
-      "lib": ["es6"],
-      "noEmit": false
-    },
-    "include": ["index.ts"]
-  }
-  
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "sourceMap": true,
+    "lib": ["es6"],
+    "noEmit": false
+  },
+  "include": ["startup.ts", "src/**/*.ts"]
+}
